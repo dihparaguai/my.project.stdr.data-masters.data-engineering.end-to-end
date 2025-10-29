@@ -15,6 +15,7 @@ Development of a data engineering pipeline focused on the banking sector, using 
 
 
 ## Project Structure:
+```
 root_project/
 │
 ├── docs/               # Project documentation, diagrams, specifications
@@ -24,9 +25,10 @@ root_project/
 ├── scripts/            # ETL scripts, functions, automation
 │
 └── README.md           # Project overview and instructions
+```
 
 
-## Architecture
+## Architecture:
 1. **Data Sources**
    - Yahoo Finance API (Santander, Itau)
    - Alpha Vantage API (Microsoft)
@@ -40,3 +42,13 @@ root_project/
    - Gold layer is loaded into PostgreSQL.
 5. **Data Analysis**
    - Power BI reads data from PostgreSQL for dashboards and reports.
+
+
+## Oficial documentation resources:
+This project uses the following tools and services:
+- [Python](https://www.python.org/doc/) – Programming language for scripts, ETL, data transformation, and API integration.
+- [Docker](https://docs.docker.com/get-started/) – Containerization platform to run isolated services (like MinIO and PostgreSQL).
+
+
+## Useful Tools:
+- [Gitignore Generator](https://www.toptal.com/developers/gitignore/) – Tool to generate `.gitignore`.

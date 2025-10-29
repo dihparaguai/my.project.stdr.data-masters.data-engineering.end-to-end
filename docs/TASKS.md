@@ -10,6 +10,6 @@
     - [ ] `postgres`
     - [ ] `spark`
 
-# Extraction
+# Extraction (Batch)
 - [ ] Create extract files to read, validate and save file in bronze/
 - [ ] Add logging

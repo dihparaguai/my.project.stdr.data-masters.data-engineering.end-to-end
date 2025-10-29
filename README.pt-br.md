@@ -16,6 +16,7 @@ O objetivo inicial é construir uma base de dados que permita análises históri
 
 
 ## Estrutura do projeto:
+```
 proj_raíz/
 │
 ├── docs/               # Documentação do projeto, diagramas, especificações
@@ -25,9 +26,10 @@ proj_raíz/
 ├── scripts/            # Scripts de ETL, funções, automações
 │
 └── README.md           # Visão geral do projeto e instruções
+```
 
 
-## Arquitetura
+## Arquitetura:
 1. **Fontes de Dados**
    - Yahoo Finance API
    - Alpha Vantage API
@@ -41,3 +43,13 @@ proj_raíz/
    - A camada Ouro é carregada no PostgreSQL.
 5. **Análise de Dados**
    - O Power BI acessa o PostgreSQL para criar dashboards e relatórios.
+
+
+## Recursos oficiais de documentação:
+Este projeto utiliza as seguintes ferramentas e serviços:
+- [Python](https://www.python.org/doc/) – linguagem de programação para scripts, ETL, transformação de dados e integração com APIs.
+- [Docker](https://docs.docker.com/get-started/) – plataforma de containers para executar serviços isolados (como MinIO e PostgreSQL).
+
+
+## Ferramentas úteis:
+- [Gitignore Generator](https://www.toptal.com/developers/gitignore/) – Ferramenta para gerar arquivos `.gitignore`.
