@@ -48,6 +48,7 @@ root_project/
 This project uses the following tools and services:
 - [Python](https://www.python.org/doc/) – Programming language for scripts, ETL, data transformation, and API integration.
 - [Docker](https://docs.docker.com/get-started/) – Containerization platform to run isolated services (like MinIO and PostgreSQL).
+- [MinIO](https://docs.min.io/enterprise/aistor-object-store/) (via Docker) – Object storage used as a local data lake to store raw (Bronze), cleaned (Silver), and aggregated (Gold) data layers.
 
 
 ## Useful Tools:

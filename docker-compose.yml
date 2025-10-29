@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  minio:                    # Service name
+    image: minio/minio      # Official MinIO image from Docker Hub
+    container_name: minio   # Name to use in "docker exec -it minio bash"
+
+    command: server /data --console-address ":9001"   # Start MinIO server, specifying data location and console port
+
+    ports:
+      - "9000:9000"  # API port to connect Python/Spark scripts (local:container)
+      - "9001:9001"  # Web console port to access in browser (local:container)
+
+    environment:
+      - MINIO_ROOT_USER=admin        # Admin user
+      - MINIO_ROOT_PASSWORD=admin123 # Admin password
+
+    volumes:
+      - ./data/minio:/data  # Maps the local folder ./data/minio to the container's /data folder for persistent storage (local:container)

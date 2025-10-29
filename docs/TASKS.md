@@ -6,7 +6,7 @@
 # Docker environment
 - [ ] Create `docker-compose.yml` with:
     - [ ] `python`
-    - [ ] `minio`
+    - [x] `minio`
     - [ ] `postgres`
     - [ ] `spark`
 

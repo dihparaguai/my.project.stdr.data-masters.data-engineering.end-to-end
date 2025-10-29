@@ -3,6 +3,9 @@
 # My personal ignored files
 SEMANAL_PLANNING.md
 
+### MinIO ###
+data/minio/
+
 # Created by https://www.toptal.com/developers/gitignore/api/python
 # Edit at https://www.toptal.com/developers/gitignore?templates=python
 

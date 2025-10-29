@@ -49,6 +49,7 @@ proj_raíz/
 Este projeto utiliza as seguintes ferramentas e serviços:
 - [Python](https://www.python.org/doc/) – linguagem de programação para scripts, ETL, transformação de dados e integração com APIs.
 - [Docker](https://docs.docker.com/get-started/) – plataforma de containers para executar serviços isolados (como MinIO e PostgreSQL).
+- [MinIO](https://docs.min.io/enterprise/aistor-object-store/) (via Docker) – armazenamento de objetos usado como data lake local para guardar dados brutos (Bronze), limpos (Silver) e agregados (Gold).
 
 
 ## Ferramentas úteis:
