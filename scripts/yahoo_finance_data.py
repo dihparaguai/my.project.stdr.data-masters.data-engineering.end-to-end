@@ -11,17 +11,11 @@ class YahooFinanceData:
         """
         self.ticker_symbol = ticker_symbol
         self.ticker = yf.Ticker(ticker_symbol)
-        self.history = None
-        self.dividends = None
+        self.df_history = None # DataFrame to store downloaded history data
 
-    def download_history(self):
+    def download_history(self, period="5y", interval="1d"): # Default to 5 years daily data
         """Download historical stock data"""
-        self.history = self.ticker.history(period="5y")
-        return self.history
-
-    def download_dividends(self):
-        """Download dividend payments"""
-        self.dividends = self.ticker.dividends
-        return self.dividends
+        self.df_history = self.ticker.history(period=period, interval=interval)
+        return self.df_history
 
 

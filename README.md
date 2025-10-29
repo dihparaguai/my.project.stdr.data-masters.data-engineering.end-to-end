@@ -2,16 +2,16 @@
 
 
 ## Theme:
-Development of a data engineering pipeline focused on the banking sector, using stock market data from major Brazilian banks listed on B3.
-The project focuses on data ingestion and structuring of financial data, simulating both batch and streaming data flows.
-The main goal is to build a database that supports historical and near real-time analyses, replicating real-world data engineering scenarios.
+Development of a data engineering pipeline focused on the banking sector, using stock data from Santander, Itaú, and Microsoft. The project focuses on data ingestion and structuring of financial data to simulate both batch and streaming workflows. The main goal is to build a database that enables historical and near-real-time analysis, simulating real-world scenarios of a data engineering pipeline.
 
 
 ## Data Sources:
-- Santander (SANB11.SA): Historical data extracted from Yahoo Finance, in CSV format, representing the batch data flow.
-    - [Yahoo Finance API](https://ranaroussi.github.io/yfinance/) 
-- Intraday data (several points within the same day) extracted using the Alpha Vantage API, in JSON format, representing the streaming data flow.
-    - [Alpha Vantage API](https://www.alphavantage.co/query)
+- Santander (SANB11.SA): historical data extracted from the Yahoo Finance API, in Pandas DataFrame format, representing a batch workflow.
+   - [Yahoo Finance API](https://ranaroussi.github.io/yfinance/) 
+- Itaú (ITUB3.SA): intraday data (multiple points within the same day) extracted from the Yahoo Finance API, in Pandas DataFrame format, representing a streaming workflow.
+   - [Yahoo Finance API](https://ranaroussi.github.io/yfinance/) 
+- Microsoft (MSFT): intraday data (multiple points within the same day) extracted from the Alpha Vantage API, in JSON format, representing a streaming workflow.
+   - [Alpha Vantage API](https://www.alphavantage.co/query)
 
 
 ## Project Structure:
@@ -28,8 +28,8 @@ root_project/
 
 ## Architecture
 1. **Data Sources**
-   - Yahoo Finance API
-   - Alpha Vantage API
+   - Yahoo Finance API (Santander, Itau)
+   - Alpha Vantage API (Microsoft)
 2. **Data Ingestion**
    - APIs run in Docker containers.
    - Data goes straight to the Bronze layer in MinIO.
