@@ -1,19 +1,35 @@
 version: "3.9"
 
 services:
-  minio:                    # Service name
-    image: minio/minio      # Official MinIO image from Docker Hub
+  minio:  # Service name
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z-cpuv1   # Official MinIO image from Docker Hub
     container_name: minio   # Name to use in "docker exec -it minio bash"
 
     command: server /data --console-address ":9001"   # Start MinIO server, specifying data location and console port
 
-    ports:
+    ports:  # (Accept only list format)
       - "9000:9000"  # API port to connect Python/Spark scripts (local:container)
       - "9001:9001"  # Web console port to access in browser (local:container)
 
-    environment:
-      - MINIO_ROOT_USER=admin        # Admin user
-      - MINIO_ROOT_PASSWORD=admin123 # Admin password
+    environment:  # (Accept key-value and list formats)
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}          # Admin user
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}  # Admin password
 
     volumes:
-      - ./data/minio:/data  # Maps the local folder ./data/minio to the container's /data folder for persistent storage (local:container)
+      - ./data/minio:/data  # Maps the local folder ./data/minio to the container's /data folder for persistent storage (local:container) [Using local because the data can be accessed and used]
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+
+    environment: # Set environment variables for Airflow connect to Postgres
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB} # Database name
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Maps a Docker volume for persistent storage (volume:container) [Using volume because the data is only used by Postgres]
+
+volumes: # Define Docker volumes will be created by Docker Compose [must be used for services that need a volume]
+  postgres_data:

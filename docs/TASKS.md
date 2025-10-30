@@ -7,8 +7,9 @@
 - [ ] Create `docker-compose.yml` with:
     - [ ] `python`
     - [x] `minio`
-    - [ ] `postgres`
+    - [x] `postgres`
     - [ ] `spark`
+    - [ ] `airflow`
 
 # Extraction (Batch)
 - [ ] Create extract files to read, validate and save file in bronze/

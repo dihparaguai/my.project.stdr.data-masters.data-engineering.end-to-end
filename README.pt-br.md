@@ -50,6 +50,12 @@ Este projeto utiliza as seguintes ferramentas e serviços:
 - [Python](https://www.python.org/doc/) – linguagem de programação para scripts, ETL, transformação de dados e integração com APIs.
 - [Docker](https://docs.docker.com/get-started/) – plataforma de containers para executar serviços isolados (como MinIO e PostgreSQL).
 - [MinIO](https://docs.min.io/enterprise/aistor-object-store/) (via Docker) – armazenamento de objetos usado como data lake local para guardar dados brutos (Bronze), limpos (Silver) e agregados (Gold).
+- [Postgres](https://www.postgresql.org/docs/) (via Docker) - Banco de dados relacional usado para armazenar metadados do Airflow e tabelas do Data Warehouse da camada Gold, mantendo o controle do estado dos workflows e os dados agregados e limpos.
+
+
+## Documentação das imagens do Docker Hub:
+- [MinIO](https://hub.docker.com/r/minio/minio)
+- [Postgres](https://hub.docker.com/_/postgres)
 
 
 ## Ferramentas úteis:
