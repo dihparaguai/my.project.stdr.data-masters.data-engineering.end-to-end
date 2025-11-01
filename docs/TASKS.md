@@ -9,7 +9,7 @@
     - [x] `minio`
     - [x] `postgres`
     - [ ] `spark`
-    - [ ] `airflow`
+    - [x] `airflow`
 
 # Extraction (Batch)
 - [ ] Create extract files to read, validate and save file in bronze/

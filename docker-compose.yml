@@ -4,32 +4,94 @@ services:
   minio:  # Service name
     image: minio/minio:RELEASE.2025-09-07T16-13-09Z-cpuv1   # Official MinIO image from Docker Hub
     container_name: minio   # Name to use in "docker exec -it minio bash"
-
+    user: "50001:50001"     # User and group ID to run the container as non-root (because MinIO uses root by default, and it's a security risk)
+    
     command: server /data --console-address ":9001"   # Start MinIO server, specifying data location and console port
-
+    
     ports:  # (Accept only list format)
       - "9000:9000"  # API port to connect Python/Spark scripts (local:container)
       - "9001:9001"  # Web console port to access in browser (local:container)
-
+    
     environment:  # (Accept key-value and list formats)
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}          # Admin user
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}  # Admin password
-
+    
     volumes:
-      - ./data/minio:/data  # Maps the local folder ./data/minio to the container's /data folder for persistent storage (local:container) [Using local because the data can be accessed and used]
+      - ./data:/data  # Maps the local folder ./data/minio to the container's /data folder for persistent storage (local:container) [Using local because the data can be accessed and used]
+
+    healthcheck:  # Check if MinIO is running (not only if its port is open) [response code 200 means healthy]
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"] # Command to test health (you can use: "docker exec -it minio curl -I http://localhost:9000/minio/health/live" to test it manually)
+      start_period: 10s     # Time to wait after starting the container before starting health checks
+      interval: 10s         # Time between each check
+      timeout: 10s          # Time to wait for a response before considering it failed
+      retries: 5            # Number of retries before considering the service unhealthy
+
 
   postgres:
     image: postgres:15
     container_name: postgres
-
+    
     environment: # Set environment variables for Airflow connect to Postgres
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB} # Database name
+    
     ports:
       - "5432:5432"
+    
     volumes:
       - postgres_data:/var/lib/postgresql/data # Maps a Docker volume for persistent storage (volume:container) [Using volume because the data is only used by Postgres]
 
-volumes: # Define Docker volumes will be created by Docker Compose [must be used for services that need a volume]
+    healthcheck: # [response "accepting connections" means healthy]
+      test: ["CMD-SHELL", "pg_isready -U airflow -d airflow"] # Command to test health (you can use: "docker exec -it postgres pg_isready -U airflow -d airflow" to test it manually)
+      start_period: 10s
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+
+  airflow:
+    image: apache/airflow:2.10.5
+    container_name: airflow
+    user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-50000}"  # Run as non-root user
+    
+    depends_on: # Wait for these services to be healthy before starting Airflow
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor # Run tasks in parallel using in the same machine
+
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB} # Connection string to Postgres to store Airflow metadata
+
+      AIRFLOW__WEBSERVER__RBAC: "True"      # Enable "Role-Based Access Control (RBAC)" in webserver, allows creating users with different permissions (admin, user, viewer, etc)
+      AIRFLOW__CORE__LOAD_EXAMPLES: "True"  # Disable example DAGs in webserver (set to "True" to enable)
+
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER}           # MinIO user
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}   # MinIO password
+      AWS_ENDPOINT_URL: http://minio:9000             # MinIO endpoint
+
+    volumes:
+      - ./dags:/opt/airflow/dags              # DAGs folder (local:container)
+      - airflow_logs:/opt/airflow/logs        # Logs folder (Using volume because logs we don't need to access them directly from host)
+      - airflow_plugins:/opt/airflow/plugins  # Plugins folder
+    
+    ports:
+      - "8080:8080" # Airflow webserver port
+
+    command: | # Run DB migrations (ensure that database schema is up to date); create admin user; then start webserver and scheduler
+      bash -c "
+        airflow db migrate &&
+
+        airflow users create --username ${AIRFLOW_USER} --password ${AIRFLOW_PASSWORD} --firstname ${AIRFLOW_NAME} --lastname ${AIRFLOW_LASTNAME} --role ${AIRFLOW_ROLE} --email ${AIRFLOW_EMAIL} &&
+
+        airflow webserver & airflow scheduler
+      "
+
+
+volumes: # Define Docker volumes will be created and managed by Docker Compose
   postgres_data:
+  airflow_logs:
+  airflow_plugins:
