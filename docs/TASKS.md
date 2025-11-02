@@ -4,11 +4,10 @@
 - [x] Draw architecture diagram
 
 # Docker environment
-- [ ] Create `docker-compose.yml` with:
-    - [ ] `python`
+- [x] Create `docker-compose.yml` with:
     - [x] `minio`
     - [x] `postgres`
-    - [ ] `spark`
+    - [x] `spark`
     - [x] `airflow`
 
 # Extraction (Batch)

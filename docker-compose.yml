@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   minio:  # Service name
     image: minio/minio:RELEASE.2025-09-07T16-13-09Z-cpuv1   # Official MinIO image from Docker Hub
@@ -53,7 +51,7 @@ services:
   airflow:
     image: apache/airflow:2.10.5
     container_name: airflow
-    user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-50000}"  # Run as non-root user
+    user: "50000:50000"  # Run as non-root user
     
     depends_on: # Wait for these services to be healthy before starting Airflow
       postgres:
@@ -81,14 +79,54 @@ services:
     ports:
       - "8080:8080" # Airflow webserver port
 
-    command: | # Run DB migrations (ensure that database schema is up to date); create admin user; then start webserver and scheduler
+    command: > # Run DB migrations (ensure that database schema is up to date); create admin user; then start webserver and scheduler
       bash -c "
         airflow db migrate &&
 
-        airflow users create --username ${AIRFLOW_USER} --password ${AIRFLOW_PASSWORD} --firstname ${AIRFLOW_NAME} --lastname ${AIRFLOW_LASTNAME} --role ${AIRFLOW_ROLE} --email ${AIRFLOW_EMAIL} &&
+        airflow users create --username ${AIRFLOW_USER} --password ${AIRFLOW_PASSWORD} --firstname '${AIRFLOW_FIRSTNAME}' --lastname '${AIRFLOW_LASTNAME}' --role ${AIRFLOW_ROLE} --email ${AIRFLOW_EMAIL}
 
         airflow webserver & airflow scheduler
       "
+
+
+  spark-master:
+    image: apache/spark:3.4.1
+    container_name: spark-master
+
+    environment:
+      - SPARK_MODE=master           # Define this container as Spark Master (manager of the workers)
+      - PATH=/opt/spark/bin:$PATH   # Add Spark binaries to PATH (to run spark-submit and other commands)
+
+    ports:
+      - "7077:7077"   # cluster communication
+      - "8081:8081"   # web UI
+
+    volumes: 
+      - ./app/scripts:/opt/spark-scripts
+      - ./app/modules:/opt/spark-modules
+      - ./app/notebooks:/opt/spark-notebooks
+
+    command: > # start Spark Master; change default port from 8080 to 8081 (to avoid conflict with Airflow)
+      /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
+
+      --webui-port 8081
+
+
+  spark-worker:
+    image: apache/spark:3.4.1
+    container_name: spark-worker
+    
+    environment:
+      - SPARK_MODE=worker                           # Define this container as Spark Worker (managed by the master)
+      - SPARK_MASTER_URL=spark://spark-master:7077  # URL of the Spark Master to connect to
+
+    depends_on:
+      - spark-master
+
+    command: > # start Spark Worker, connect to the Master
+      /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker
+
+      spark://spark-master:7077
 
 
 volumes: # Define Docker volumes will be created and managed by Docker Compose

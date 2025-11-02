@@ -50,13 +50,15 @@ This project uses the following tools and services:
 - [Docker](https://docs.docker.com/get-started/) – Containerization platform to run isolated services (like MinIO and PostgreSQL).
 - [MinIO](https://docs.min.io/enterprise/aistor-object-store/) (via Docker) – Object storage used as a local data lake to store raw (Bronze), cleaned (Silver), and aggregated (Gold) data layers.
 - [Postgres](https://www.postgresql.org/docs/) (via Docker) - Relational database used to store Airflow metadata and data warehouse tables for the Gold layer, keeping track of workflow states and aggregated, cleaned data.
-- [Airflow](https://airflow.apache.org/docs/) (via Docker) - Workflow orchestrator to manage, schedule, and monitor ETL pipelines, making tasks run in the right order and keeping data processing automated.
+- [Apache-Airflow](https://airflow.apache.org/docs/) (via Docker) - Workflow orchestrator to manage, schedule, and monitor ETL pipelines, making tasks run in the right order and keeping data processing automated.
+- [Apache-Spark](https://archive.apache.org/dist/spark/docs/3.4.1/) (via Docker) - A distributed processing engine used to run transformations on large data volumes quickly and at scale, integrating with Python via PySpark for ETL pipelines and data processing.
 
 
 ## Docker hub images documentation:
 - [MinIO](https://hub.docker.com/r/minio/minio)
 - [Postgres](https://hub.docker.com/_/postgres)
-- [Airflow](https://hub.docker.com/r/apache/airflow)
+- [Apache-Airflow](https://hub.docker.com/r/apache/airflow)
+- [Apache-Spark](https://hub.docker.com/r/apache/spark)
 
 
 ## Useful Tools:
