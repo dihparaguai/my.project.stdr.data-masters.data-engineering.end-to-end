@@ -90,7 +90,11 @@ services:
 
 
   spark-master:
-    image: apache/spark:3.4.1
+    build:                      # Build Spark image from Dockerfile (with dependencies installed)
+      context: ./app
+      dockerfile: Dockerfile
+    image: spark-master:dev     # Name of the built image
+
     container_name: spark-master
 
     environment:
@@ -113,7 +117,11 @@ services:
 
 
   spark-worker:
-    image: apache/spark:3.4.1
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    image: spark-worker:dev
+
     container_name: spark-worker
     
     environment:
