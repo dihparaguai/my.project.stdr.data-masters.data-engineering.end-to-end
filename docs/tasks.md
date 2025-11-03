@@ -4,12 +4,13 @@
 - [x] Draw architecture diagram
 
 # Docker environment
-- [x] Create `docker-compose.yml` with:
+- [ ] Create `docker-compose.yml` with:
     - [x] `minio`
     - [x] `postgres`
     - [x] `spark`
     - [x] `airflow`
+    - [ ] `python`
 
 # Extraction (Batch)
-- [ ] Create extract files to read, validate and save file in bronze/
+- [ ] Create extract files to read, validate and save file in bronze/ layer
 - [ ] Add logging
