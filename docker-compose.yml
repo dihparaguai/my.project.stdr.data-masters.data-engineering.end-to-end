@@ -93,26 +93,25 @@ services:
     build:                      # Build Spark image from Dockerfile (with dependencies installed)
       context: ./app
       dockerfile: Dockerfile
-    image: spark-master:dev     # Name of the built image
+    image: spark-master:d-eng    # Name of the built image
 
     container_name: spark-master
 
     environment:
-      - SPARK_MODE=master           # Define this container as Spark Master (manager of the workers)
-      - PATH=/opt/spark/bin:$PATH   # Add Spark binaries to PATH (to run spark-submit and other commands)
+      - SPARK_HOME=/opt/spark           # Define Spark installation folder path
+      - PYSPARK_PYTHON=python3          # Define Python interpreter for PySpark
+      - PYSPARK_DRIVER_PYTHON=python3   # Define Python interpreter for Spark Driver
 
     ports:
-      - "7077:7077"   # cluster communication
-      - "8081:8081"   # web UI
+      - "7077:7077"   # Cluster communication
+      - "8081:8081"   # Web UI
 
-    volumes: 
-      - ./app/scripts:/opt/spark-scripts
-      - ./app/modules:/opt/spark-modules
-      - ./app/notebooks:/opt/spark-notebooks
+    volumes:
+      - ./app:/opt/app
 
-    command: > # start Spark Master; change default port from 8080 to 8081 (to avoid conflict with Airflow)
+    command: > # Start Spark Master, define hostname, change default port from 8080 to 8081 (to avoid conflict with Airflow)
       /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
-
+      --host spark-master
       --webui-port 8081
 
 
@@ -120,20 +119,25 @@ services:
     build:
       context: ./app
       dockerfile: Dockerfile
-    image: spark-worker:dev
+    image: spark-worker:d-eng
 
     container_name: spark-worker
-    
-    environment:
-      - SPARK_MODE=worker                           # Define this container as Spark Worker (managed by the master)
-      - SPARK_MASTER_URL=spark://spark-master:7077  # URL of the Spark Master to connect to
 
+    environment:
+      - SPARK_HOME=/opt/spark
+      - PYSPARK_PYTHON=python3
+      - PYSPARK_DRIVER_PYTHON=python3
+      - SPARK_WORKER_CORES=2                      # Define number of CPU cores to use (2 cores)
+      - SPARK_WORKER_MEMORY=1g                    # Define amount of memory to use (1g = 1 gigabyte)
+
+    volumes:
+      - ./app:/opt/app
+    
     depends_on:
       - spark-master
 
-    command: > # start Spark Worker, connect to the Master
+    command: > # Start Spark Worker, connect to Spark Master
       /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker
-
       spark://spark-master:7077
 
 

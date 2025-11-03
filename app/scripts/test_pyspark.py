@@ -4,7 +4,7 @@ def create_and_show_spark_df(): # Function to test Spark creation inside and out
     spark = (
         SparkSession.builder
         .master("spark://localhost:7077")           # Use localhost for local testing
-        # .master("spark://spark-master:7077")      # Use this line when running inside Docker
+        # .master("spark://spark-master:7077")        # Use this line when running inside Docker
         .appName("TestSparkApp")
         .getOrCreate()
     )
