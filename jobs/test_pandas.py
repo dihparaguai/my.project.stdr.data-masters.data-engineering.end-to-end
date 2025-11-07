@@ -10,5 +10,3 @@ def create_and_show_df(): # Function to test Pandas dependency usage inside Dock
     df = pd.DataFrame(records, columns=header)
 
     print(df)
-
-create_and_show_df()

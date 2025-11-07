@@ -2,7 +2,6 @@ services:
   minio:  # Service name
     image: minio/minio:RELEASE.2025-09-07T16-13-09Z-cpuv1   # Official MinIO image from Docker Hub
     container_name: minio   # Name to use in "docker exec -it minio bash"
-    user: "50001:50001"     # User and group ID to run the container as non-root (because MinIO uses root by default, and it's a security risk)
     
     command: server /data --console-address ":9001"   # Start MinIO server, specifying data location and console port
     
@@ -24,6 +23,7 @@ services:
       timeout: 10s          # Time to wait for a response before considering it failed
       retries: 5            # Number of retries before considering the service unhealthy
 
+# ================================================================
 
   postgres:
     image: postgres:15
@@ -47,11 +47,14 @@ services:
       timeout: 10s
       retries: 5
 
+# ================================================================
 
   airflow:
-    image: apache/airflow:2.10.5
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: airflow:d-eng
     container_name: airflow
-    user: "50000:50000"  # Run as non-root user
     
     depends_on: # Wait for these services to be healthy before starting Airflow
       postgres:
@@ -64,24 +67,29 @@ services:
 
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB} # Connection string to Postgres to store Airflow metadata
 
-      AIRFLOW__WEBSERVER__RBAC: "True"      # Enable "Role-Based Access Control (RBAC)" in webserver, allows creating users with different permissions (admin, user, viewer, etc)
-      AIRFLOW__CORE__LOAD_EXAMPLES: "True"  # Disable example DAGs in webserver (set to "True" to enable)
+      AIRFLOW__WEBSERVER__RBAC: "True"       # Enable "Role-Based Access Control (RBAC)" in webserver, allows creating users with different permissions (admin, user, viewer, etc)
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"  # Disable example DAGs in webserver (set to "True" to enable)
 
       AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER}           # MinIO user
       AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}   # MinIO password
       AWS_ENDPOINT_URL: http://minio:9000             # MinIO endpoint
 
+      PYTHONPATH: /opt/airflow  # Add Airflow home to Python path to access modules/helpers easily
+
     volumes:
-      - ./dags:/opt/airflow/dags              # DAGs folder (local:container)
-      - airflow_logs:/opt/airflow/logs        # Logs folder (Using volume because logs we don't need to access them directly from host)
-      - airflow_plugins:/opt/airflow/plugins  # Plugins folder
-    
+      - ./dags:/opt/airflow/dags                         # Airflow DAGs – workflow definitions (schedules, tasks)
+      - ./jobs:/opt/airflow/jobs                         # Jobs – Spark or ETL scripts executed by DAGs
+      - ./modules:/opt/airflow/modules                   # Modules – ETL logic (functions, classes, transformations)
+      - ./helpers:/opt/airflow/helpers                   # Helpers – small utilities (logging, Spark session, configs)
+      - airflow_logs:/opt/airflow/logs                   # Logs folder (Using volume because logs we don't need to access them directly from host)
+      - airflow_plugins:/opt/airflow/plugins             # Plugins folder
+
     ports:
       - "8080:8080" # Airflow webserver port
 
-    command: > # Run DB migrations (ensure that database schema is up to date); create admin user; then start webserver and scheduler
+    command: > # Run DB upgrade (ensure that database schema is up to date); create admin user; then start webserver and scheduler
       bash -c "
-        airflow db migrate &&
+        airflow db upgrade &&
 
         airflow users create --username ${AIRFLOW_USER} --password ${AIRFLOW_PASSWORD} --firstname '${AIRFLOW_FIRSTNAME}' --lastname '${AIRFLOW_LASTNAME}' --role ${AIRFLOW_ROLE} --email ${AIRFLOW_EMAIL}
 
@@ -89,57 +97,85 @@ services:
       "
 
 
-  spark-master:
-    build:                      # Build Spark image from Dockerfile (with dependencies installed)
-      context: ./app
-      dockerfile: Dockerfile
-    image: spark-master:d-eng    # Name of the built image
+# ================================================================
 
+  spark-master:
+    image: apache/spark:3.5.7-java17
     container_name: spark-master
 
     environment:
       - SPARK_HOME=/opt/spark           # Define Spark installation folder path
       - PYSPARK_PYTHON=python3          # Define Python interpreter for PySpark
       - PYSPARK_DRIVER_PYTHON=python3   # Define Python interpreter for Spark Driver
+      - SPARK_HOME=/opt/spark
+      - PATH=/opt/spark/bin:$PATH
 
     ports:
       - "7077:7077"   # Cluster communication
       - "8081:8081"   # Web UI
 
-    volumes:
-      - ./app:/opt/app
+    volumes: # Folders shared with Airflow container
+      - ./jobs:/opt/airflow/jobs                       
+      - ./modules:/opt/airflow/modules                 
+      - ./helpers:/opt/airflow/helpers                   
 
-    command: > # Start Spark Master, define hostname, change default port from 8080 to 8081 (to avoid conflict with Airflow)
+    command: > # Start Spark Master, define hostname, change default port from 8080 to 8081 (to avoid conflict with Airflow), and port 7077 for worker communication
       /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
+      
       --host spark-master
+      
       --webui-port 8081
+      --port 7077
 
+# ================================================================
 
-  spark-worker:
-    build:
-      context: ./app
-      dockerfile: Dockerfile
-    image: spark-worker:d-eng
-
-    container_name: spark-worker
+  spark-worker-1:
+    image: apache/spark:3.5.7-java17
+    container_name: spark-worker-1
 
     environment:
       - SPARK_HOME=/opt/spark
       - PYSPARK_PYTHON=python3
       - PYSPARK_DRIVER_PYTHON=python3
-      - SPARK_WORKER_CORES=2                      # Define number of CPU cores to use (2 cores)
-      - SPARK_WORKER_MEMORY=1g                    # Define amount of memory to use (1g = 1 gigabyte)
 
     volumes:
-      - ./app:/opt/app
+      - ./jobs:/opt/airflow/jobs                       
+      - ./modules:/opt/airflow/modules                 
+      - ./helpers:/opt/airflow/helpers   
     
     depends_on:
       - spark-master
 
     command: > # Start Spark Worker, connect to Spark Master
       /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker
+      
       spark://spark-master:7077
 
+# ================================================================
+
+  spark-worker-2:
+    image: apache/spark:3.5.7-java17
+    container_name: spark-worker-2  
+
+    environment:
+      - SPARK_HOME=/opt/spark
+      - PYSPARK_PYTHON=python3
+      - PYSPARK_DRIVER_PYTHON=python3
+
+    volumes:
+      - ./jobs:/opt/airflow/jobs                       
+      - ./modules:/opt/airflow/modules                 
+      - ./helpers:/opt/airflow/helpers   
+    
+    depends_on:
+      - spark-master
+
+    command: >
+      /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker
+      
+      spark://spark-master:7077
+
+# ================================================================
 
 volumes: # Define Docker volumes will be created and managed by Docker Compose
   postgres_data:
