@@ -14,7 +14,7 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}  # Admin password
     
     volumes:
-      - ./data:/data  # Maps the local folder ./data/minio to the container's /data folder for persistent storage (local:container) [Using local because the data can be accessed and used]
+      - ./data:/data  # Maps the local folder ./data to the container's /data folder for persistent storage (local:container) [Using local because the data can be accessed and used]
 
     healthcheck:  # Check if MinIO is running (not only if its port is open) [response code 200 means healthy]
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"] # Command to test health (you can use: "docker exec -it minio curl -I http://localhost:9000/minio/health/live" to test it manually)
@@ -74,13 +74,13 @@ services:
       AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}   # MinIO password
       AWS_ENDPOINT_URL: http://minio:9000             # MinIO endpoint
 
-      PYTHONPATH: /opt/airflow  # Add Airflow home to Python path to access modules/helpers easily
+      PYTHONPATH: /opt  # Add this folder to Python path to access modules/ easily
 
     volumes:
       - ./dags:/opt/airflow/dags                         # Airflow DAGs – workflow definitions (schedules, tasks)
-      - ./jobs:/opt/airflow/jobs                         # Jobs – Spark or ETL scripts executed by DAGs
-      - ./modules:/opt/airflow/modules                   # Modules – ETL logic (functions, classes, transformations)
-      - ./helpers:/opt/airflow/helpers                   # Helpers – small utilities (logging, Spark session, configs)
+      - ./jobs:/opt/jobs                                 # Jobs – Spark or ETL scripts executed by DAGs
+      - ./modules:/opt/modules                           # Modules – ETL logic (functions, classes, transformations)
+      - ./data:/opt/data                                 # Data folder (raw)
       - airflow_logs:/opt/airflow/logs                   # Logs folder (Using volume because logs we don't need to access them directly from host)
       - airflow_plugins:/opt/airflow/plugins             # Plugins folder
 
@@ -115,9 +115,9 @@ services:
       - "8081:8081"   # Web UI
 
     volumes: # Folders shared with Airflow container
-      - ./jobs:/opt/airflow/jobs                       
-      - ./modules:/opt/airflow/modules                 
-      - ./helpers:/opt/airflow/helpers                   
+      - ./jobs:/opt/jobs                       
+      - ./modules:/opt/modules          
+      - ./data:/opt/data
 
     command: > # Start Spark Master, define hostname, change default port from 8080 to 8081 (to avoid conflict with Airflow), and port 7077 for worker communication
       /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
@@ -139,9 +139,9 @@ services:
       - PYSPARK_DRIVER_PYTHON=python3
 
     volumes:
-      - ./jobs:/opt/airflow/jobs                       
-      - ./modules:/opt/airflow/modules                 
-      - ./helpers:/opt/airflow/helpers   
+      - ./jobs:/opt/jobs                       
+      - ./modules:/opt/modules
+      - ./data:/opt/data                 
     
     depends_on:
       - spark-master
@@ -163,9 +163,9 @@ services:
       - PYSPARK_DRIVER_PYTHON=python3
 
     volumes:
-      - ./jobs:/opt/airflow/jobs                       
-      - ./modules:/opt/airflow/modules                 
-      - ./helpers:/opt/airflow/helpers   
+      - ./jobs:/opt/jobs                       
+      - ./modules:/opt/modules                 
+      - ./data:/opt/data
     
     depends_on:
       - spark-master
