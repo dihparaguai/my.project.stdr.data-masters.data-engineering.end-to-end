@@ -19,8 +19,7 @@ O tema abordado pelo case, no que diz respeito aos dados utilizados, é de livre
 - Considere diferentes formatos de dados, como arquivos CSV, APIs públicas, bancos de dados, etc.
 2. **Ingestão de Dados:**
 - Implemente um mecanismo eficiente para a ingestão em lote e/ou contínua e em tempo real dos dados provenientes das diferentes fontes.
-- Considere diferentes formas de ingestão, como streaming de dados, ETL (Extract, Transform,
-Load) e arquiteturas (Kappa, Lambda).
+- Considere diferentes formas de ingestão, como streaming de dados, ETL (Extract, Transform, Load) e arquiteturas (Kappa, Lambda).
 3. **Armazenamento de Dados:**
 - Escolha uma ferramenta de armazenamento adequada e eficiente para seu case. Saiba diferenciar e justificar o uso de outras possíveis ferramentas ou tecnologias para o armazenamento dos dados, levando em consideração aspectos como volume, velocidade e variedade.
 - Avalie opções de armazenamento na nuvem (cloud) ou on-premises, considerando aspectos de segurança e escalabilidade.
