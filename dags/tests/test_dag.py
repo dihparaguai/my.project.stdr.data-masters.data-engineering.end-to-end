@@ -2,14 +2,9 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
 from datetime import datetime
-import sys
 
-from jobs.test_pandas import create_and_show_df
+from jobs.tests.test_pandas import create_and_show_df
 
-
-
-def say_hello():
-    print("Hello from PythonOperator!")
 
 with DAG(
     dag_id="python_operator_dag",
@@ -18,12 +13,13 @@ with DAG(
     catchup=False
 ) as dag:
     
-    hello_task = PythonOperator(
-        task_id="hello_task",
+    pandas_task = PythonOperator(
+        task_id="pandas_task",
         python_callable=create_and_show_df
     )
 
-    hello_task
+    pandas_task
+
 
 with DAG(
     dag_id="spark_operator_dag",
@@ -33,8 +29,8 @@ with DAG(
 ) as dag:
     
     spark_task = SparkSubmitOperator(
-        task_id='spark_submit_task',
-        application='/opt/airflow/jobs/test_spark.py',
+        task_id='spark_task',
+        application='/opt/jobs/tests/test_spark.py',
         conn_id="spark_default",
         verbose=True
     )
