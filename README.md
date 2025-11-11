@@ -6,12 +6,8 @@ Development of a data engineering pipeline focused on the banking sector, using 
 
 
 ## Data Sources:
-- Santander (SANB11.SA): historical data extracted from the Yahoo Finance API, in Pandas DataFrame format, representing a batch workflow.
+- Yahoo Finance API, in Pandas DataFrame format.
    - [Yahoo Finance API](https://ranaroussi.github.io/yfinance/) 
-- Itaú (ITUB3.SA): intraday data (multiple points within the same day) extracted from the Yahoo Finance API, in Pandas DataFrame format, representing a streaming workflow.
-   - [Yahoo Finance API](https://ranaroussi.github.io/yfinance/) 
-- Microsoft (MSFT): intraday data (multiple points within the same day) extracted from the Alpha Vantage API, in JSON format, representing a streaming workflow.
-   - [Alpha Vantage API](https://www.alphavantage.co/query)
 
 
 ## Project Structure:
@@ -34,14 +30,16 @@ root_project/
    - Alpha Vantage API (Microsoft)
 2. **Data Ingestion**
    - APIs run in Docker containers.
-   - Data goes straight to the Bronze layer in MinIO.
+   - Data goes straight to the Raw layer(Local).
 3. **Data Processing**
-   - Data moves through layers: Bronze → Silver → Gold.
+   - Data moves through layers: Raw(Local) → Bronze(MinIO) → Silver(MinIO) → Gold(MinIO).
    - Applies cleaning, transforming, and aggregating.
 4. **Data Storage**
    - Gold layer is loaded into PostgreSQL.
 5. **Data Analysis**
    - Power BI reads data from PostgreSQL for dashboards and reports.
+
+![Architecture Image](./docs/architecture_diagram.png)
 
 
 ## Oficial documentation resources:
