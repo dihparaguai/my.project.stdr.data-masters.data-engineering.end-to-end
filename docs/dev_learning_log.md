@@ -30,3 +30,16 @@
 *Solution*: Change the script file path in each container and in the local environment to a commom path.
 
 *Learning*: Airflow works as a driver, it find the file and sends the job to Spark. Then, Spark needs to find the same file, using the path that Airflow has sent before.
+
+---
+
+### 2025-11-07: What's a `.dockerignore`:
+*Context*: When building a Docker image, you can copy many files into its layers.
+
+*Learning*: When you use a folder to build a Docker image, some files don't need to be copied. To avoid increasing the image weight, adding extra latency, or exposing sensitive data, you can list ignored files such as: 
+- `*.pyc, *.pyo, *.pyd` (Python cache of compiled files)
+- `*.db` (database files) 
+- `*.log` (log files)
+- `*.env` (environment variables files)
+- `*.git`(Git repository data)
+- `*.gitignore`(similar to `.dockerignore`, but used by Git)
