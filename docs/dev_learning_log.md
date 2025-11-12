@@ -19,3 +19,14 @@
 *Solution*: Add one day to the date paremeter to get the end date correctly.
 
 *Leaning*: The function parameter is a string, so to cast to `datetime` type, I used `datetime.strptime(<date_str>, "%Y-%m-%d")`. Then, to cast the date to string, I used `<date>.strftime("%Y-%m-%d")`.
+
+---
+
+### 2025-11-11: How Airflow (inside a container) and Spark (inside another container) find the script file (job):
+*Context*: I was testing a DAG to verify if the test script started by Airflow would work, but it wasn't working.
+
+*Error*: The script file path inside of Airflow and Spark containers are different.
+
+*Solution*: Change the script file path in each container and in the local environment to a commom path.
+
+*Learning*: Airflow works as a driver, it find the file and sends the job to Spark. Then, Spark needs to find the same file, using the path that Airflow has sent before.
